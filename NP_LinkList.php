@@ -40,8 +40,7 @@ if(!function_exists('quote_smart')) {
 	function quote_smart($value) {
 		if (get_magic_quotes_gpc()) $value = stripslashes($value);
 		if (!is_numeric($value)) {
-			//$value = "'". mysql_real_escape_string($value) ."'";
-			$value = "'". mysql_escape_string($value) ."'";
+			$value = "'". sql_real_escape_string($value) ."'";
 		}
 		return $value;
 	}
@@ -52,8 +51,8 @@ class NP_LinkList extends NucleusPlugin {
 function getName() { return 'LinkList'; }
 function getAuthor() { return 'Jim Stone + Fel + nakahara21 + yu'; }
 function getURL() { return 'http://works.datoka.jp/index.php?itemid=176'; }
-function getVersion() { return '0.62'; }
-function getMinNucleusVersion() { return '320'; }
+function getVersion() { return '0.63'; }
+function getMinNucleusVersion() { return '350'; }
 function getEventList() { return array('QuickMenu'); }	
 function getTableList() { return array( sql_table('plug_linklist'), sql_table('plug_linklist_grp') ); }
 
@@ -74,7 +73,7 @@ function hasAdminArea() {
 
 function init() {
 	// include language file for this plugin
-	$language = ereg_replace( '[\\|/]', '', getLanguageName());
+	$language = str_replace( array('\\','/'), '', getLanguageName());
 	if (file_exists($this->getDirectory().$language.'.php'))
 		include_once($this->getDirectory().$language.'.php');
 	else
@@ -96,13 +95,13 @@ function init_grp($flg_edit=false) {
 	// pick up group data
 	$query = "SHOW TABLES LIKE '". sql_table('plug_linklist_grp') ."'";
 	$grptable = sql_query ($query);
-	if (!mysql_num_rows($grptable)) return;
+	if (!sql_num_rows($grptable)) return;
 	
 	$query = "SELECT * FROM ". sql_table('plug_linklist_grp') 
 		. " ORDER BY sortkey,title";
 	$grps = sql_query ($query);
-	if (mysql_num_rows($grps) > 0){
-		while ($grp = mysql_fetch_object($grps)){
+	if (sql_num_rows($grps) > 0){
+		while ($grp = sql_fetch_object($grps)){
 			//check
 			if ( $flg_edit and !$this->_checkBlogList($grp->bid) ) continue;
 			
@@ -142,7 +141,7 @@ function install() {
 	
 	$check_query = "SELECT * FROM ". sql_table('plug_linklist_grp');
 	$check_rows = sql_query($check_query);
-	if (mysql_num_rows($check_rows) < 1) { //if no rows in grp table, set default group
+	if (sql_num_rows($check_rows) < 1) { //if no rows in grp table, set default group
 		$query = "INSERT INTO ". sql_table('plug_linklist_grp') ." SET title='Links',bid='0',sortkey='a'";
 		sql_query($query);
 	}
@@ -174,7 +173,7 @@ function update() {
 	
 	//convert banner settings (image url)
 	$res = sql_query("SELECT id,title,description FROM ". sql_table('plug_linklist'));
-	while ($row = mysql_fetch_assoc($res)) {
+	while ($row = sql_fetch_assoc($res)) {
 		if ( preg_match('/\.(gif|jpg|jpeg|png)$/', $row['title']) ) {
 			$row['title'] = stripslashes($row['title']);
 			$row['description'] = stripslashes($row['description']);
@@ -192,7 +191,7 @@ function update() {
 function _checkColumn(){
 	$res = sql_query("SHOW FIELDS from ".sql_table('plug_linklist') );
 	$fieldnames = array();
-	while ($co = mysql_fetch_assoc($res)) {
+	while ($co = sql_fetch_assoc($res)) {
 		$fieldnames[] = $co['Field'];
 	}
 	return in_array('imgsrc',$fieldnames);
@@ -225,7 +224,7 @@ function _isBlogAdmin() {
 	
 	$query = 'SELECT * FROM '.sql_table('team').' WHERE'
 	       . ' tmember='. $member->getID() .' and tadmin=1';
-	return (mysql_num_rows(sql_query($query)) != 0);
+	return (sql_num_rows(sql_query($query)) != 0);
 }
 
 function _isBlogTeam() {
@@ -233,7 +232,7 @@ function _isBlogTeam() {
 	
 	$query = 'SELECT * FROM '.sql_table('team').' WHERE'
 	       . ' tmember='. $member->getID();
-	return (mysql_num_rows(sql_query($query)) != 0);
+	return (sql_num_rows(sql_query($query)) != 0);
 }
 
 function _checkGroupList($gid) {
@@ -275,7 +274,7 @@ function _checkBlogList($chkstr) {
 	$res = sql_query($query);
 	
 	$arr_bid = array();
-	while ($row = mysql_fetch_row($res)) {
+	while ($row = sql_fetch_row($res)) {
 		$arr_bid[] = $row[0];
 	}
 	foreach ($arr_chk as $chk) {
@@ -399,8 +398,8 @@ function doSkinVar($skinType, $symbol, $tplname='', $pre='', $post='') {
 		// tag-template vars for group
 		$grp_target = array('$title','$desc');
 		$grp_replace = array(
-			htmlspecialchars($grp->title, ENT_QUOTES),
-			htmlspecialchars($grp->description, ENT_QUOTES),
+			htmlspecialchars($grp->title, ENT_QUOTES,_CHARSET),
+			htmlspecialchars($grp->description, ENT_QUOTES,_CHARSET),
 			);
 		
 		$query = "SELECT id,title,url,imgsrc,description,sortkey FROM ". sql_table('plug_linklist')
@@ -408,7 +407,7 @@ function doSkinVar($skinType, $symbol, $tplname='', $pre='', $post='') {
 			." ORDER BY sortkey,title";
 		$links = sql_query ($query);
 		
-		if (mysql_num_rows($links) > 0){ //if link group have links actually
+		if (sql_num_rows($links) > 0){ //if link group have links actually
 			if ( !empty($grp->title) ) {
 				// print header
 				echo str_replace($grp_target, $grp_replace, $tpl[$tplname]['head']);
@@ -419,7 +418,7 @@ function doSkinVar($skinType, $symbol, $tplname='', $pre='', $post='') {
 			
 			echo $tpl[$tplname]['begin']."\n";
 			//link loop
-			while ($link = mysql_fetch_object($links)){
+			while ($link = sql_fetch_object($links)){
 				//prepare
 				$link->title = stripslashes($link->title);
 				$link->description = stripslashes($link->description);
@@ -449,10 +448,10 @@ function doSkinVar($skinType, $symbol, $tplname='', $pre='', $post='') {
 				// tag-template vars for link
 				$l_target = array('$title','$desc','$href','$src','$onclick','$pre','$post');
 				$l_replace = array(
-					htmlspecialchars($link->title, ENT_QUOTES),
-					htmlspecialchars($link->description, ENT_QUOTES),
-					htmlspecialchars($link->url, ENT_QUOTES),
-					htmlspecialchars($link->imgsrc, ENT_QUOTES),
+					htmlspecialchars($link->title, ENT_QUOTES,_CHARSET),
+					htmlspecialchars($link->description, ENT_QUOTES,_CHARSET),
+					htmlspecialchars($link->url, ENT_QUOTES,_CHARSET),
+					htmlspecialchars($link->imgsrc, ENT_QUOTES,_CHARSET),
 					$onclick,
 					$pre,
 					$post,
@@ -470,4 +469,3 @@ function doSkinVar($skinType, $symbol, $tplname='', $pre='', $post='') {
 } //end of function doSkinVar()
 
 } //end of class
-?>
