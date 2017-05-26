@@ -387,7 +387,7 @@ function doSkinVar($skinType, $symbol, $tplname='', $pre='', $post='') {
 	// group loop
 	foreach ($this->arr_grp as $grp) {
 		// list matching
-		$ary_bid = split(',', $grp->bid);
+		$ary_bid = explode(',', $grp->bid);
 		if ($symbol == '') {
 			if ( $grp->sortkey == 'z' or ($grp->bid != 0 and !in_array($bid, $ary_bid)) ) {
 				continue;
