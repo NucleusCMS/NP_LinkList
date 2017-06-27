@@ -398,8 +398,8 @@ function doSkinVar($skinType, $symbol, $tplname='', $pre='', $post='') {
 		// tag-template vars for group
 		$grp_target = array('$title','$desc');
 		$grp_replace = array(
-			htmlspecialchars($grp->title, ENT_QUOTES,_CHARSET),
-			htmlspecialchars($grp->description, ENT_QUOTES,_CHARSET),
+			hsc($grp->title),
+			hsc($grp->description),
 			);
 		
 		$query = "SELECT id,title,url,imgsrc,description,sortkey FROM ". sql_table('plug_linklist')
@@ -448,10 +448,10 @@ function doSkinVar($skinType, $symbol, $tplname='', $pre='', $post='') {
 				// tag-template vars for link
 				$l_target = array('$title','$desc','$href','$src','$onclick','$pre','$post');
 				$l_replace = array(
-					htmlspecialchars($link->title, ENT_QUOTES,_CHARSET),
-					htmlspecialchars($link->description, ENT_QUOTES,_CHARSET),
-					htmlspecialchars($link->url, ENT_QUOTES,_CHARSET),
-					htmlspecialchars($link->imgsrc, ENT_QUOTES,_CHARSET),
+					hsc($link->title),
+					hsc($link->description),
+					hsc($link->url),
+					hsc($link->imgsrc),
 					$onclick,
 					$pre,
 					$post,
