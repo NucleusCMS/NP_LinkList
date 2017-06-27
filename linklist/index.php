@@ -21,7 +21,7 @@ include($strRel . 'config.php');
 include($DIR_LIBS . 'PLUGINADMIN.php');
 include('functions.php');
 
-$language = ereg_replace( '[\\|/]', '', getLanguageName());
+$language = str_replace( array('/','\\'), '', getLanguageName());
 $langfile = $language.'.php';
 if (file_exists($langfile))
 	include_once($langfile);
