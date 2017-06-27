@@ -382,7 +382,7 @@ function doSkinVar($skinType, $symbol, $tplname='', $pre='', $post='') {
 	/* --- END OF LIST TEMPLATE --- */
 	
 	// get data
-	if (!count($this->arr_grp)) $this->init_grp();
+	if (!isset($this->arr_grp) || !count($this->arr_grp)) $this->init_grp();
 	
 	// group loop
 	foreach ($this->arr_grp as $grp) {
