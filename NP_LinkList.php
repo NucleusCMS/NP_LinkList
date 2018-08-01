@@ -315,8 +315,14 @@ function _canEdit($bid) {
 	}
 }
 
-function doSkinVar($skinType, $symbol, $tplname='', $pre='', $post='') {
+function doSkinVar($skinType) {
 	global $CONF, $manager, $blog;
+
+	$p = func_get_args();
+	$symbol  = $p[1];
+	$tplname = isset($p[2]) ? $p[2] : '';
+	$pre     = isset($p[3]) ? $p[3] : '';
+	$post    = isset($p[4]) ? $p[4] : '';
 	
 	$actionURL = $CONF['ActionURL'];
 	if ($blog) $b =& $blog; 
